@@ -884,11 +884,12 @@ public class view extends javax.swing.JFrame {
                     dcl.setDescription(rs.getString("DESCRIPTION"));
                     dcl.setComments(rs.getString("COMMENTS"));
                     dcl.setTag(rs.getString("TAG"));
-                    dcl.setLiquibase("LIQUIBASE");
+                    dcl.setLiquibase(rs.getString("LIQUIBASE"));
                     
                     dclList.add(dcl);
                 }
                 
+                rs.close();
                 con.close();
             } catch (SQLException ex) {
                 Logger.getLogger(view.class.getName()).log(Level.SEVERE, null, ex);
