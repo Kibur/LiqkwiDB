@@ -14,12 +14,18 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.StringWriter;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
+import static javax.swing.ListSelectionModel.SINGLE_SELECTION;
 import javax.swing.filechooser.FileFilter;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.xml.parsers.DocumentBuilder;
@@ -79,12 +85,23 @@ public class view extends javax.swing.JFrame {
         btnReset = new javax.swing.JButton();
         btnOpen = new javax.swing.JButton();
         lblFilepath = new javax.swing.JLabel();
+        jLabel3 = new javax.swing.JLabel();
+        txtTag = new javax.swing.JTextField();
         btnUpdate = new javax.swing.JButton();
         btnUpdateSQL = new javax.swing.JButton();
         jPanel2 = new javax.swing.JPanel();
+        jPanel4 = new javax.swing.JPanel();
+        jScrollPane3 = new javax.swing.JScrollPane();
+        tblDatabaseChangelog = new javax.swing.JTable();
+        btnRollback = new javax.swing.JButton();
+        jLabel4 = new javax.swing.JLabel();
+        lblSelectedScript = new javax.swing.JLabel();
+        btnLoad = new javax.swing.JButton();
+        jLabel5 = new javax.swing.JLabel();
+        lblUsername = new javax.swing.JLabel();
+        btnRollbackSQL = new javax.swing.JButton();
 
         PopUp.setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
-        PopUp.setTitle("SQL result from XML script");
         PopUp.setAlwaysOnTop(true);
         PopUp.setMinimumSize(new java.awt.Dimension(800, 600));
 
@@ -96,6 +113,7 @@ public class view extends javax.swing.JFrame {
         });
 
         txtOutput.setColumns(20);
+        txtOutput.setLineWrap(true);
         txtOutput.setRows(5);
         jScrollPane2.setViewportView(txtOutput);
 
@@ -169,11 +187,15 @@ public class view extends javax.swing.JFrame {
             }
         });
 
+        jLabel3.setText("Tag:");
+
+        txtTag.setText("0.0.000");
+
         javax.swing.GroupLayout jPanel3Layout = new javax.swing.GroupLayout(jPanel3);
         jPanel3.setLayout(jPanel3Layout);
         jPanel3Layout.setHorizontalGroup(
             jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 671, Short.MAX_VALUE)
+            .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 715, Short.MAX_VALUE)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel3Layout.createSequentialGroup()
                 .addComponent(btnReset)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
@@ -185,12 +207,16 @@ public class view extends javax.swing.JFrame {
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                         .addComponent(cbSnippets, javax.swing.GroupLayout.PREFERRED_SIZE, 175, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addComponent(btnAdd))
+                        .addComponent(btnAdd)
+                        .addGap(77, 77, 77)
+                        .addComponent(jLabel3)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(txtTag, javax.swing.GroupLayout.PREFERRED_SIZE, 125, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addGroup(jPanel3Layout.createSequentialGroup()
                         .addComponent(btnOpen)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(lblFilepath)))
-                .addGap(0, 0, Short.MAX_VALUE))
+                .addGap(0, 161, Short.MAX_VALUE))
         );
         jPanel3Layout.setVerticalGroup(
             jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -202,9 +228,11 @@ public class view extends javax.swing.JFrame {
                 .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel2)
                     .addComponent(cbSnippets, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(btnAdd))
+                    .addComponent(btnAdd)
+                    .addComponent(jLabel3)
+                    .addComponent(txtTag, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 222, Short.MAX_VALUE)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 266, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(btnSave)
@@ -265,15 +293,119 @@ public class view extends javax.swing.JFrame {
 
         jTabbedPane1.addTab("Update", jPanel1);
 
+        jPanel4.setBorder(javax.swing.BorderFactory.createTitledBorder("Database Changelog"));
+
+        tblDatabaseChangelog.setAutoCreateRowSorter(true);
+        tblDatabaseChangelog.setModel(new javax.swing.table.DefaultTableModel(
+            new Object [][] {
+                {null, null, null, null, null, null}
+            },
+            new String [] {
+                "ID", "AUTHOR", "FILENAME", "DATAEXECUTED", "DESCRIPTION", "TAG"
+            }
+        ) {
+            boolean[] canEdit = new boolean [] {
+                false, false, false, false, false, false
+            };
+
+            public boolean isCellEditable(int rowIndex, int columnIndex) {
+                return canEdit [columnIndex];
+            }
+        });
+        jScrollPane3.setViewportView(tblDatabaseChangelog);
+
+        javax.swing.GroupLayout jPanel4Layout = new javax.swing.GroupLayout(jPanel4);
+        jPanel4.setLayout(jPanel4Layout);
+        jPanel4Layout.setHorizontalGroup(
+            jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel4Layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 691, Short.MAX_VALUE)
+                .addContainerGap())
+        );
+        jPanel4Layout.setVerticalGroup(
+            jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel4Layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 322, Short.MAX_VALUE)
+                .addContainerGap())
+        );
+
+        btnRollback.setText("Rollback");
+        btnRollback.setEnabled(false);
+        btnRollback.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnRollbackActionPerformed(evt);
+            }
+        });
+
+        jLabel4.setText("Selected script:");
+
+        lblSelectedScript.setText("None");
+
+        btnLoad.setText("Load script");
+        btnLoad.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnLoadActionPerformed(evt);
+            }
+        });
+
+        jLabel5.setText("Connected with:");
+
+        lblUsername.setText("root");
+
+        btnRollbackSQL.setText("RollbackSQL");
+        btnRollbackSQL.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnRollbackSQLActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
         jPanel2.setLayout(jPanel2Layout);
         jPanel2Layout.setHorizontalGroup(
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 705, Short.MAX_VALUE)
+            .addGroup(jPanel2Layout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jPanel4, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel2Layout.createSequentialGroup()
+                        .addGap(0, 0, Short.MAX_VALUE)
+                        .addComponent(btnRollbackSQL)
+                        .addGap(18, 18, 18)
+                        .addComponent(btnRollback))
+                    .addGroup(jPanel2Layout.createSequentialGroup()
+                        .addComponent(jLabel5)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(lblUsername)
+                        .addGap(0, 0, Short.MAX_VALUE))
+                    .addGroup(jPanel2Layout.createSequentialGroup()
+                        .addComponent(jLabel4)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(lblSelectedScript)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(btnLoad)))
+                .addContainerGap())
         );
         jPanel2Layout.setVerticalGroup(
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 454, Short.MAX_VALUE)
+            .addGroup(jPanel2Layout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel4)
+                    .addComponent(lblSelectedScript)
+                    .addComponent(btnLoad))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel5)
+                    .addComponent(lblUsername))
+                .addGap(18, 18, 18)
+                .addComponent(jPanel4, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addGap(18, 18, 18)
+                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(btnRollback)
+                    .addComponent(btnRollbackSQL))
+                .addContainerGap())
         );
 
         jTabbedPane1.addTab("Rollback", jPanel2);
@@ -293,7 +425,26 @@ public class view extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void btnUpdateActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnUpdateActionPerformed
-        executeCommand("update");
+        if (!txtTag.getText().equals("")) {
+            String result = "";
+            
+            result += executeCommand("update");
+            result += "\n";
+            result += executeCommand("tag");
+        
+            if (result != null) {
+                PopUp.setTitle("Output message");
+                txtOutput.setText(result);
+                PopUp.setVisible(true);
+            }
+            
+            getDataFromDbAndPopulateTable();
+        }
+        else {
+            // MessageBox informing the user he needs to set a tag
+            JOptionPane.showMessageDialog(null, "The tag field needs to be filled in, otherwise you will not be able to rollback to a previous version.");
+            txtTag.requestFocus();
+        }
     }//GEN-LAST:event_btnUpdateActionPerformed
 
     private void btnAddActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAddActionPerformed
@@ -370,7 +521,7 @@ public class view extends javax.swing.JFrame {
                         Logger.getLogger(view.class.getName()).log(Level.SEVERE, null, ex);
                     }
                     
-                    enableDisableUpdateButton(true);
+                    enableDisableUpdateAndRollbackButton(true);
                     populateCombobox(snippetList());
                 }
             } catch (IOException ex) {
@@ -387,7 +538,7 @@ public class view extends javax.swing.JFrame {
     private void btnResetActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnResetActionPerformed
         resetTextArea();
         lblFilepath.setText("");
-        enableDisableUpdateButton(false);
+        enableDisableUpdateAndRollbackButton(false);
     }//GEN-LAST:event_btnResetActionPerformed
 
     private String createTempFile() {
@@ -407,66 +558,137 @@ public class view extends javax.swing.JFrame {
         return filepath;
     }
     
-    private void executeCommand(String command) {
+    private String executeCommand(String command) {
         String changeLogFile = lblFilepath.getText();
         
-        if (changeLogFile.equals("") || changeLogFile == null) {
-            changeLogFile = createTempFile();
+        if (changeLogFile.equals("")) {
+            changeLogFile = lblSelectedScript.getText();
+            
+            if (changeLogFile.equals("") || changeLogFile.equals("None")) {
+                changeLogFile = createTempFile();
+            }
         }
         
-        if (changeLogFile == null) { return; }
+        if (changeLogFile == null) { return null; }
         
         List<String> params = new ArrayList<String>();
         
         params.add("--changeLogFile=" + changeLogFile);
         
+        if (command.equals("tag")) {
+            params.set(0, txtTag.getText());
+        }
+        else if (command.equals("rollback")) {
+            params.add(txtTag.getText());
+        }
+        else if (command.equals("rollbackSQL")) {
+            int rowIndex = tblDatabaseChangelog.getSelectedRow();
+            String tag = (String)tblDatabaseChangelog.getValueAt(rowIndex, 9); // 9 = TAG
+            
+            if (tag != null || !tag.equals("")) {
+                params.add(tag);
+            }
+        }
+        
+        String result = "";
+        
         try {
-            txtOutput.setText(ExecCommand.exec(command, params));
+            result = ExecCommand.exec(command, params);
         } catch (IOException | InterruptedException ex) {
             Logger.getLogger(view.class.getName()).log(Level.SEVERE, null, ex);
         }
         
-        PopUp.setVisible(true);
+        return result;
     }
     
     private void btnUpdateSQLActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnUpdateSQLActionPerformed
-        executeCommand("updateSQL");
+        PopUp.setTitle("SQL result from XML script");
+        
+        String result = executeCommand("updateSQL");
+        
+        txtOutput.setText(result);
+        PopUp.setVisible(true);
     }//GEN-LAST:event_btnUpdateSQLActionPerformed
 
-    private void enableDisableUpdateButton(boolean status) {
+    private void enableDisableUpdateAndRollbackButton(boolean status) {
         btnUpdate.setEnabled(status);
+        btnRollback.setEnabled(status);
     }
     
-    private void btnOpenActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnOpenActionPerformed
+    private void openFile(String caller) {
         FileFilter fileFilter = new FileNameExtensionFilter("XML Files", "xml");
         FileDialog.addChoosableFileFilter(fileFilter);
         FileDialog.setCurrentDirectory(new File(System.getProperty("user.dir")));
-        
-        txtScript.setText("");
         
         if (FileDialog.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
             try {
                 File selectedFile = FileDialog.getSelectedFile();
                 
-                Document doc = parseXMLfile(selectedFile.getCanonicalPath());
+                lblSelectedScript.setText(selectedFile.getCanonicalPath());
                 
-                txtScript.append(documentToString(doc));
-                txtScript.setCaretPosition(txtScript.getCaretPosition() - 22); // Move cursor
-                txtScript.requestFocus();
+                if (caller.equals("btnOpen")) {
+                    Document doc = parseXMLfile(selectedFile.getCanonicalPath());
+
+                    txtScript.setText("");
+                    txtScript.append(documentToString(doc));
+                    txtScript.setCaretPosition(txtScript.getCaretPosition() - 22); // Move cursor
+                    txtScript.requestFocus();
+
+                    lblFilepath.setText(selectedFile.getCanonicalPath());
+
+                    enableDisableUpdateAndRollbackButton(true);
+                }
                 
-                lblFilepath.setText(selectedFile.getAbsolutePath());
-                
-                enableDisableUpdateButton(true);
+                btnRollback.setEnabled(true);
             } catch (IOException ex) {
-                resetTextArea();
+                lblFilepath.setText("");
+                lblSelectedScript.setText("None");
+                
+                if (caller.equals("btnOpen")) { resetTextArea(); }
                 Logger.getLogger(view.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
+    }
+    
+    private void btnOpenActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnOpenActionPerformed
+        openFile("btnOpen");
     }//GEN-LAST:event_btnOpenActionPerformed
 
     private void btnCloseActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCloseActionPerformed
         PopUp.dispose();
     }//GEN-LAST:event_btnCloseActionPerformed
+
+    private void btnLoadActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnLoadActionPerformed
+        openFile("btnLoad");
+    }//GEN-LAST:event_btnLoadActionPerformed
+
+    private void btnRollbackActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnRollbackActionPerformed
+        if (tblDatabaseChangelog.getSelectedRow() > -1) {
+            String result = executeCommand("rollback");
+        
+            if (result != null) {
+                PopUp.setTitle("Output message");
+                txtOutput.setText(result);
+                PopUp.setVisible(true);
+            }
+            
+            getDataFromDbAndPopulateTable();
+        }
+        else {
+            JOptionPane.showMessageDialog(null, "You need to select the version you which to rollback in the table.");
+        }
+    }//GEN-LAST:event_btnRollbackActionPerformed
+
+    private void btnRollbackSQLActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnRollbackSQLActionPerformed
+        if (tblDatabaseChangelog.getSelectedRow() > -1) {
+            PopUp.setTitle("SQL result from XML script");
+
+            String result = executeCommand("rollbackSQL");
+
+            txtOutput.setText(result);
+            PopUp.setVisible(true);
+        }
+    }//GEN-LAST:event_btnRollbackSQLActionPerformed
 
     /**
      * @param args the command line arguments
@@ -597,7 +819,9 @@ public class view extends javax.swing.JFrame {
         }
     }
     
-    private void readLiquibaseProperties() {
+    private String readLiquibaseProperties(String prop) {
+        String strLine = "";
+        
         try {
             // Open the file that is the first
             // command line parameter
@@ -607,23 +831,21 @@ public class view extends javax.swing.JFrame {
             DataInputStream in = new DataInputStream(fstream);
             BufferedReader br = new BufferedReader(new InputStreamReader(in));
             
-            String strLine;
-            
             // Read File Line by Line
             while ((strLine = br.readLine()) != null) {
-                if (strLine.startsWith("url:")) {
-                    strLine = strLine.substring(4).trim();
+                if (strLine.startsWith(prop)) {
+                    strLine = strLine.substring(prop.length()).trim();
                     
                     break;
                 }
             }
             
             in.close();
-            
-            lblJDBC_URL.setText(strLine);
         } catch (Exception ex) {
             Logger.getLogger(view.class.getName()).log(Level.SEVERE, null, ex);
         }
+        
+        return strLine;
     }
     
     private void loadTemplate() {
@@ -634,11 +856,71 @@ public class view extends javax.swing.JFrame {
         txtScript.requestFocus();
     }
     
+    private List<DatabaseChangeLog> loadChangelogTable() {
+        String url = lblJDBC_URL.getText();
+        String username = lblUsername.getText();
+        String pwd = readLiquibaseProperties("password:");
+        List<DatabaseChangeLog> dclList = new ArrayList<DatabaseChangeLog>();
+        
+        if (!url.equals("") && !username.equals("")) {
+            try {
+                Connection con = DriverManager.getConnection(url, username, pwd);
+                Statement stmt = con.createStatement();
+                ResultSet rs;
+                String sqlQuery = "SELECT * FROM DATABASECHANGELOG";
+                
+                rs = stmt.executeQuery(sqlQuery);
+                
+                while (rs.next()) {
+                    DatabaseChangeLog dcl = new DatabaseChangeLog();
+                    
+                    dcl.setId(rs.getString("ID"));
+                    dcl.setAuthor(rs.getString("AUTHOR"));
+                    dcl.setFilename(rs.getString("FILENAME"));
+                    dcl.setDateExecuted(rs.getDate("DATEEXECUTED"));
+                    dcl.setOrderExecuted(rs.getInt("ORDEREXECUTED"));
+                    dcl.setExecType(rs.getString("EXECTYPE"));
+                    dcl.setMd5Sum(rs.getString("MD5SUM"));
+                    dcl.setDescription(rs.getString("DESCRIPTION"));
+                    dcl.setComments(rs.getString("COMMENTS"));
+                    dcl.setTag(rs.getString("TAG"));
+                    dcl.setLiquibase("LIQUIBASE");
+                    
+                    dclList.add(dcl);
+                }
+                
+                con.close();
+            } catch (SQLException ex) {
+                Logger.getLogger(view.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+        
+        return dclList;
+    }
+    
+    private void populateTable(List<DatabaseChangeLog> dclList) {
+        DCLTableModel model = new DCLTableModel(dclList);
+        
+        tblDatabaseChangelog.setModel(model);
+        tblDatabaseChangelog.setSelectionMode(SINGLE_SELECTION);
+    }
+    
+    private void getDataFromDbAndPopulateTable() {
+        List<DatabaseChangeLog> dclList = loadChangelogTable();
+            
+        if (dclList.size() > 0) {
+            populateTable(dclList);
+        }
+    }
+    
     private void appOnLoad() {
         try {
-            readLiquibaseProperties();
+            lblJDBC_URL.setText(readLiquibaseProperties("url:"));
+            lblUsername.setText(readLiquibaseProperties("username:"));
+            
             loadTemplate();
             populateCombobox(snippetList());
+            getDataFromDbAndPopulateTable();
         } catch (Exception ex) {
             Logger.getLogger(view.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -649,23 +931,35 @@ public class view extends javax.swing.JFrame {
     private javax.swing.JFrame PopUp;
     private javax.swing.JButton btnAdd;
     private javax.swing.JButton btnClose;
+    private javax.swing.JButton btnLoad;
     private javax.swing.JButton btnOpen;
     private javax.swing.JButton btnReset;
+    private javax.swing.JButton btnRollback;
+    private javax.swing.JButton btnRollbackSQL;
     private javax.swing.JButton btnSave;
     private javax.swing.JButton btnUpdate;
     private javax.swing.JButton btnUpdateSQL;
     private javax.swing.JComboBox cbSnippets;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
+    private javax.swing.JLabel jLabel3;
+    private javax.swing.JLabel jLabel4;
+    private javax.swing.JLabel jLabel5;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel3;
+    private javax.swing.JPanel jPanel4;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
+    private javax.swing.JScrollPane jScrollPane3;
     private javax.swing.JTabbedPane jTabbedPane1;
     private javax.swing.JLabel lblFilepath;
     private javax.swing.JLabel lblJDBC_URL;
+    private javax.swing.JLabel lblSelectedScript;
+    private javax.swing.JLabel lblUsername;
+    private javax.swing.JTable tblDatabaseChangelog;
     private javax.swing.JTextArea txtOutput;
     private javax.swing.JTextArea txtScript;
+    private javax.swing.JTextField txtTag;
     // End of variables declaration//GEN-END:variables
 }
