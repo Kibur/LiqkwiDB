@@ -1,0 +1,3 @@
+<changeSet author="username" id="renameTable-0">
+    <renameTable catalogName="dbName" newTableName="tblName" oldTableName="tblName"/>
+</changeSet>

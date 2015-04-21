@@ -1,0 +1,8 @@
+<changeSet author="username" id="sql-0">
+    <sql dbms="h2, oracle" endDelimiter="\nGO" splitStatements="true" stripComments="true">insert into person (name) values ('Bob')
+        <comment>What about Bob?</comment>
+    </sql>
+	<rollback>
+		
+	</rollback>
+</changeSet>

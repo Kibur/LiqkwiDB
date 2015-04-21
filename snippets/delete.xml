@@ -1,0 +1,8 @@
+<changeSet author="username" id="delete-0">
+	<delete catalogName="dbName" tableName="tblName">
+        <where>A String</where>
+    </delete>
+	<rollback>
+		
+	</rollback>
+</changeSet>

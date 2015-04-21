@@ -1,0 +1,6 @@
+<changeSet author="username" id="sqlFile-0">
+    <sqlFile dbms="h2, oracle" encoding="utf8" endDelimiter="\nGO" path="my/path/file.sql" relativeToChangelogFile="true" splitStatements="true" stripComments="true"/>
+	<rollback>
+		
+	</rollback>
+</changeSet>
