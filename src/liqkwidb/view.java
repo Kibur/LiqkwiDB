@@ -516,7 +516,10 @@ public class view extends javax.swing.JFrame {
                     writeFile(destinationFile);
                     
                     try {
-                        lblFilepath.setText(destinationFile.getCanonicalPath());
+                        String path = destinationFile.getCanonicalPath();
+                        
+                        lblFilepath.setText(path);
+                        lblSelectedScript.setText(path);
                     } catch (IOException ex) {
                         Logger.getLogger(view.class.getName()).log(Level.SEVERE, null, ex);
                     }
