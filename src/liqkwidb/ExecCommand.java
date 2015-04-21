@@ -15,6 +15,22 @@ import java.util.Map;
  * @author manuel
  */
 public class ExecCommand {
+    private static List<String> prepareCommandList(String execCommand, List<String> commandList) {
+        commandList.add(0, "java");
+        commandList.add(1, "-jar");
+        commandList.add(2, "liquibase.jar");
+        
+        if (execCommand.equals("update") || execCommand.equals("updateSQL")) {
+            commandList.add(execCommand);
+        }
+        else {
+            // tag, rollback & rollbackSQL
+            commandList.add(commandList.size() - 1, execCommand);
+        }
+        
+        return commandList;
+    }
+    
     public static String exec(String execCommand, List<String> commandList) throws InterruptedException, IOException {
         // Add default commands
         /*switch (OSValidator.getOS()) {
@@ -31,10 +47,7 @@ public class ExecCommand {
                     return;
         }*/
         
-        commandList.add(0, "java");
-        commandList.add(1, "-jar");
-        commandList.add(2, "liquibase.jar");
-        commandList.add(execCommand);
+        commandList = prepareCommandList(execCommand, commandList);
         
         ProcessBuilder builder = new ProcessBuilder(commandList);
         Map<String, String> environ = builder.environment();
@@ -57,6 +70,14 @@ public class ExecCommand {
         
         System.out.println("ExitValue: " + exitVal);
         
-        return outputGobbler.getData();
+        String outputMessage = outputGobbler.getData(),
+                errorMessage = errorGobbler.getData(),
+                result = outputMessage;
+        
+        if (outputMessage.equals("")) {
+            result = errorMessage;
+        }
+        
+        return result;
     }
 }
