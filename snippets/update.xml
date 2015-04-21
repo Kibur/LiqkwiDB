@@ -1,0 +1,9 @@
+<changeSet author="username" id="update-0">
+    <update catalogName="dbName" tableName="tblName">
+        <column name="address" type="varchar(255)"/>
+        <where>A String</where>
+    </update>
+	<rollback>
+		
+	</rollback>
+</changeSet>

@@ -1,0 +1,16 @@
+<changeSet author="username" id="insert-0">  
+		<insert catalogName="dbname" tableName="tblName">
+			<column name="key" value="test"/>
+			<column name="title" value="test waarde"/>
+			<column name="direction" value="1"/>
+			<column name="volgorde" value="4"/>
+		</insert>
+		<rollback>
+			<delete catalogName="dbname" tableName="tblName">
+				<where>volgorde = :value</where>
+				<whereParams>
+					<param valueNumeric="4"/>
+				</whereParams>
+			</delete>
+		</rollback>
+</changeSet>

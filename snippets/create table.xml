@@ -1,0 +1,8 @@
+<changeSet author="username" id="createTable-0">
+    <createTable catalogName="dbName" remarks="A String" tableName="tblName" tablespace="A String">
+        <column name="address" type="varchar(255)"/>
+    </createTable>
+	<rollback>
+		
+	</rollback>
+</changeSet>

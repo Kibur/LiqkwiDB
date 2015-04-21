@@ -1,0 +1,6 @@
+<changeSet author="username" id="dropColumn-0">
+	<dropColumn catalogName="dbName" columnName="colName" tableName="tblName"/>
+	<rollback>
+		
+	</rollback>
+</changeSet>

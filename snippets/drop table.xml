@@ -1,0 +1,6 @@
+<changeSet author="username" id="dropTable-0">
+    <dropTable cascadeConstraints="true" catalogName="dbName" tableName="tblName"/>
+	<rollback>
+		
+	</rollback>
+</changeSet>

@@ -1,0 +1,5 @@
+<changeSet author="username" id="addColumn-0">
+		<addColumn catalogName="dbname" tableName="tblName">
+			<column name="Test" type="varchar(255)"/>
+		</addColumn>
+</changeSet>
