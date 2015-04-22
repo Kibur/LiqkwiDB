@@ -20,7 +20,7 @@ public class ExecCommand {
         commandList.add(1, "-jar");
         commandList.add(2, "liquibase.jar");
         
-        if (execCommand.equals("update") || execCommand.equals("updateSQL")) {
+        if (execCommand.equals("update") || execCommand.equals("updateSQL") || execCommand.equals("generateChangeLog")) {
             commandList.add(execCommand);
         }
         else {
