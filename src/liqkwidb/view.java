@@ -5,6 +5,7 @@
  */
 package liqkwidb;
 
+import com.mysql.jdbc.exceptions.jdbc4.MySQLSyntaxErrorException;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.DataInputStream;
@@ -48,6 +49,7 @@ import org.xml.sax.SAXException;
  * @author manuel
  */
 public class view extends javax.swing.JFrame {
+    private boolean isFirst = false;
 
     /**
      * Creates new form view
@@ -189,7 +191,7 @@ public class view extends javax.swing.JFrame {
 
         jLabel3.setText("Tag:");
 
-        txtTag.setText("0.0.000");
+        txtTag.setText("0.0.001");
 
         javax.swing.GroupLayout jPanel3Layout = new javax.swing.GroupLayout(jPanel3);
         jPanel3.setLayout(jPanel3Layout);
@@ -232,7 +234,7 @@ public class view extends javax.swing.JFrame {
                     .addComponent(jLabel3)
                     .addComponent(txtTag, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 266, Short.MAX_VALUE)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 265, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(btnSave)
@@ -428,9 +430,18 @@ public class view extends javax.swing.JFrame {
         if (!txtTag.getText().equals("")) {
             String result = "";
             
-            result += executeCommand("update");
+            if (isFirst) {
+                result += executeCommand("generateChangeLog", "btnUpdate");
+                result += "\n";
+                result += executeCommand("tag", "btnUpdate");
+                result += "\n";
+                
+                isFirst = false;
+            }
+            
+            result += executeCommand("update", "btnUpdate");
             result += "\n";
-            result += executeCommand("tag");
+            result += executeCommand("tag", "btnUpdate");
         
             if (result != null) {
                 PopUp.setTitle("Output message");
@@ -561,32 +572,38 @@ public class view extends javax.swing.JFrame {
         return filepath;
     }
     
-    private String executeCommand(String command) {
+    private String executeCommand(String command, String caller) {
         String changeLogFile = lblFilepath.getText();
+        String tag = txtTag.getText();
         
-        if (changeLogFile.equals("")) {
-            changeLogFile = lblSelectedScript.getText();
-            
-            if (changeLogFile.equals("") || changeLogFile.equals("None")) {
-                changeLogFile = createTempFile();
+        if (!isFirst) {
+            if (changeLogFile.equals("")) {
+                changeLogFile = lblSelectedScript.getText();
+
+                if (changeLogFile.equals("") || changeLogFile.equals("None")) {
+                    changeLogFile = createTempFile();
+                }
+            }
+
+            if (changeLogFile == null) { return null; }
+        }
+        else {
+            if (caller.equals("btnUpdate")) {
+                changeLogFile = "db.changeLog0.xml";
+                tag = "0.0.000";
             }
         }
-        
-        if (changeLogFile == null) { return null; }
         
         List<String> params = new ArrayList<String>();
         
         params.add("--changeLogFile=" + changeLogFile);
         
         if (command.equals("tag")) {
-            params.set(0, txtTag.getText());
+            params.set(0, tag);
         }
-        else if (command.equals("rollback")) {
-            params.add(txtTag.getText());
-        }
-        else if (command.equals("rollbackSQL")) {
+        else if (command.equals("rollback") || command.equals("rollbackSQL")) {
             int rowIndex = tblDatabaseChangelog.getSelectedRow();
-            String tag = (String)tblDatabaseChangelog.getValueAt(rowIndex, 9); // 9 = TAG
+            tag = (String)tblDatabaseChangelog.getValueAt(rowIndex, 9); // 9 = TAG
             
             if (tag != null || !tag.equals("")) {
                 params.add(tag);
@@ -607,7 +624,7 @@ public class view extends javax.swing.JFrame {
     private void btnUpdateSQLActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnUpdateSQLActionPerformed
         PopUp.setTitle("SQL result from XML script");
         
-        String result = executeCommand("updateSQL");
+        String result = executeCommand("updateSQL", "btnUpdateSQL");
         
         txtOutput.setText(result);
         PopUp.setVisible(true);
@@ -667,7 +684,7 @@ public class view extends javax.swing.JFrame {
 
     private void btnRollbackActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnRollbackActionPerformed
         if (tblDatabaseChangelog.getSelectedRow() > -1) {
-            String result = executeCommand("rollback");
+            String result = executeCommand("rollback", "btnRollback");
         
             if (result != null) {
                 PopUp.setTitle("Output message");
@@ -678,7 +695,7 @@ public class view extends javax.swing.JFrame {
             getDataFromDbAndPopulateTable();
         }
         else {
-            JOptionPane.showMessageDialog(null, "You need to select the version you which to rollback in the table.");
+            JOptionPane.showMessageDialog(null, "You need to select the version you wish to rollback in the table.");
         }
     }//GEN-LAST:event_btnRollbackActionPerformed
 
@@ -686,10 +703,13 @@ public class view extends javax.swing.JFrame {
         if (tblDatabaseChangelog.getSelectedRow() > -1) {
             PopUp.setTitle("SQL result from XML script");
 
-            String result = executeCommand("rollbackSQL");
+            String result = executeCommand("rollbackSQL", "btnRollbackSQL");
 
             txtOutput.setText(result);
             PopUp.setVisible(true);
+        }
+        else {
+            JOptionPane.showMessageDialog(null, "You need to select the version you wish to rollback in the table.");
         }
     }//GEN-LAST:event_btnRollbackSQLActionPerformed
 
@@ -894,6 +914,11 @@ public class view extends javax.swing.JFrame {
                 
                 rs.close();
                 con.close();
+            } catch (MySQLSyntaxErrorException mseex) {
+                if (mseex.getErrorCode() == 1146) { // Table doesn't exist
+                    // Occurs when you never used Liquibase before
+                    isFirst = true;
+                }
             } catch (SQLException ex) {
                 Logger.getLogger(view.class.getName()).log(Level.SEVERE, null, ex);
             }
