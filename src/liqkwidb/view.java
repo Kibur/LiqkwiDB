@@ -552,6 +552,7 @@ public class view extends javax.swing.JFrame {
     private void btnResetActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnResetActionPerformed
         resetTextArea();
         lblFilepath.setText("");
+        lblSelectedScript.setText("None");
         enableDisableUpdateAndRollbackButton(false);
     }//GEN-LAST:event_btnResetActionPerformed
 
